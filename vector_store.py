@@ -24,6 +24,9 @@ from config import (
     EMBEDDING_MODEL,
     CHROMA_COLLECTION_POLICIES,
     CHROMA_COLLECTION_REGULATIONS,
+    CHROMA_MODE,
+    CHROMA_HOST,
+    CHROMA_PORT,
 )
 
 
@@ -81,16 +84,35 @@ class VectorStore:
         collection_name: str = CHROMA_COLLECTION_POLICIES,
         persist_dir: str | Path = CHROMA_DIR,
         embedding_model_name: str = EMBEDDING_MODEL,
+        chroma_mode: str = CHROMA_MODE,
+        chroma_host: str = CHROMA_HOST,
+        chroma_port: int = CHROMA_PORT,
     ):
         self.collection_name = collection_name
-        self.persist_dir = Path(persist_dir)
-        self.persist_dir.mkdir(parents=True, exist_ok=True)
 
-        # ChromaDB client persistente
-        self._client = chromadb.PersistentClient(
-            path=str(self.persist_dir),
-            settings=Settings(anonymized_telemetry=False),
-        )
+        # ── Connessione ChromaDB ──────────────────────────────────────────────
+        # "embedded": ChromaDB gira dentro Python — utile in locale senza Docker
+        # "http":     ChromaDB gira come server separato — usato in Docker
+        #
+        # Il valore viene letto da config.py che a sua volta legge la variabile
+        # d'ambiente CHROMA_MODE. In locale non serve impostare nulla (default embedded).
+        # In Docker, docker-compose.yml imposta CHROMA_MODE=http automaticamente.
+
+        if chroma_mode == "http":
+            logger.info(f"ChromaDB modalità HTTP | {chroma_host}:{chroma_port}")
+            self._client = chromadb.HttpClient(
+                host=chroma_host,
+                port=chroma_port,
+                settings=Settings(anonymized_telemetry=False),
+            )
+        else:
+            logger.info(f"ChromaDB modalità embedded | {persist_dir}")
+            self.persist_dir = Path(persist_dir)
+            self.persist_dir.mkdir(parents=True, exist_ok=True)
+            self._client = chromadb.PersistentClient(
+                path=str(self.persist_dir),
+                settings=Settings(anonymized_telemetry=False),
+            )
 
         # Collection (crea se non esiste)
         self._collection: Collection = self._client.get_or_create_collection(

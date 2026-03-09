@@ -1,0 +1,77 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# docker-compose.yml — Normatrix Preprocessing Stack
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Due servizi:
+#   chromadb     → server ChromaDB, sempre attivo, dati persistenti su volume
+#   preprocessing → pipeline one-shot, parte dopo che ChromaDB è pronto
+#
+# Comandi utili:
+#   docker compose up              → avvia tutto (ChromaDB + pipeline)
+#   docker compose up chromadb     → avvia solo ChromaDB (utile in sviluppo)
+#   docker compose logs -f         → vedi i log in tempo reale
+#   docker compose down            → ferma tutto (i dati nel volume restano)
+#   docker compose down -v         → ferma tutto E cancella i dati (reset completo)
+
+services:
+
+  # ── ChromaDB Server ──────────────────────────────────────────────────────────
+  chromadb:
+    image: chromadb/chroma          # immagine ufficiale, non la costruiamo noi
+    container_name: normatrix-chromadb
+    ports:
+      - "8000:8000"                 # espone la porta 8000 al tuo PC
+                                    # → puoi interrogarlo da localhost:8000
+    volumes:
+      - chroma-data:/data           # /data dentro il container = volume persistente
+                                    # i dati sopravvivono ai riavvii del container
+    healthcheck:
+      # Docker aspetta che questo comando abbia successo prima di avviare
+      # il servizio preprocessing. Chiama l'endpoint heartbeat di ChromaDB
+      # ogni 5 secondi, fino a 10 tentativi (= 50 secondi massimo di attesa).
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v2/heartbeat"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - normatrix-net
+
+  # ── Pipeline di Preprocessing ─────────────────────────────────────────────────
+  preprocessing:
+    build:
+      context: .                    # costruisce l'immagine dal Dockerfile nella cartella corrente
+      dockerfile: Dockerfile
+    container_name: normatrix-preprocessing
+    environment:
+      # Queste variabili d'ambiente sovrascrivono i default di config.py
+      - CHROMA_MODE=http            # usa HttpClient invece di PersistentClient
+      - CHROMA_HOST=chromadb        # nome del servizio ChromaDB nella rete interna Docker
+      - CHROMA_PORT=8000
+    volumes:
+      # Monta la cartella documents/ del tuo PC in /app/documents nel container
+      # :ro = read only, la pipeline può solo leggere i PDF, non modificarli
+      - ./documents:/app/documents:ro
+    depends_on:
+      chromadb:
+        condition: service_healthy  # aspetta che ChromaDB risponda all'healthcheck
+    networks:
+      - normatrix-net
+    # restart: "no" è il default per container one-shot — non riavviare se finisce
+    restart: "no"
+
+# ── Volumi ────────────────────────────────────────────────────────────────────
+# "chroma-data" è un volume Docker named — Docker lo gestisce autonomamente.
+# I dati stanno in una directory gestita da Docker sul tuo sistema,
+# NON in ./chroma_db come in modalità embedded.
+# Per vedere dove: docker volume inspect normatrix_chroma-data
+volumes:
+  chroma-data:
+
+# ── Rete interna ──────────────────────────────────────────────────────────────
+# I due container comunicano su questa rete virtuale privata.
+# "preprocessing" raggiunge "chromadb" usando il nome del servizio come hostname.
+# Dall'esterno (il tuo PC) ChromaDB è raggiungibile su localhost:8000.
+networks:
+  normatrix-net:
+    driver: bridge
