@@ -8,6 +8,8 @@ Responsabilità:
   - Esporre un metodo di ricerca per il retriever
 """
 
+import os
+import time
 from pathlib import Path
 from typing import Optional
 from loguru import logger
@@ -100,11 +102,35 @@ class VectorStore:
 
         if chroma_mode == "http":
             logger.info(f"ChromaDB modalità HTTP | {chroma_host}:{chroma_port}")
-            self._client = chromadb.HttpClient(
-                host=chroma_host,
-                port=chroma_port,
-                settings=Settings(anonymized_telemetry=False),
-            )
+            # ── Retry loop ───────────────────────────────────────────────────
+            # In Docker, la pipeline parte pochi secondi dopo ChromaDB.
+            # ChromaDB potrebbe non essere ancora pronto ad accettare connessioni.
+            # Ritentiamo ogni CHROMA_WAIT_INTERVAL secondi fino a CHROMA_WAIT_RETRIES
+            # tentativi, poi solleviamo eccezione.
+            retries = int(os.getenv("CHROMA_WAIT_RETRIES", 15))
+            interval = int(os.getenv("CHROMA_WAIT_INTERVAL", 5))
+
+            for attempt in range(1, retries + 1):
+                try:
+                    self._client = chromadb.HttpClient(
+                        host=chroma_host,
+                        port=chroma_port,
+                        settings=Settings(anonymized_telemetry=False),
+                    )
+                    self._client.heartbeat()  # verifica connessione reale
+                    logger.info(f"  Connesso a ChromaDB al tentativo {attempt}")
+                    break
+                except Exception as e:
+                    if attempt == retries:
+                        raise RuntimeError(
+                            f"Impossibile connettersi a ChromaDB dopo {retries} tentativi. "
+                            f"Ultimo errore: {e}"
+                        )
+                    logger.warning(
+                        f"  ChromaDB non ancora pronto (tentativo {attempt}/{retries}), "
+                        f"riprovo tra {interval}s..."
+                    )
+                    time.sleep(interval)
         else:
             logger.info(f"ChromaDB modalità embedded | {persist_dir}")
             self.persist_dir = Path(persist_dir)
