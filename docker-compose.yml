@@ -1,5 +1,6 @@
 services:
 
+  # ── ChromaDB Server ───────────────────────────────────────────────────────
   chromadb:
     image: chromadb/chroma:latest
     container_name: normatrix-chromadb
@@ -10,24 +11,57 @@ services:
     networks:
       - normatrix-net
 
+  # ── Pipeline Preprocessing (one-shot) ────────────────────────────────────
+  # Avvia, indicizza i PDF, si spegne. Rieseguire per aggiungere nuovi PDF.
+  # La pipeline viene anche chiamata dal backend via API /upload.
   preprocessing:
     build:
-      context: .
+      context: ./preprocessing
       dockerfile: Dockerfile
     container_name: normatrix-preprocessing
     environment:
       - CHROMA_MODE=http
       - CHROMA_HOST=chromadb
       - CHROMA_PORT=8000
-      - CHROMA_WAIT_RETRIES=15    # quante volte ritentare prima di arrendersi
-      - CHROMA_WAIT_INTERVAL=5    # secondi tra un tentativo e l'altro
+      - CHROMA_WAIT_RETRIES=15
+      - CHROMA_WAIT_INTERVAL=5
     volumes:
       - ./documents:/app/documents:ro
     depends_on:
-      - chromadb                  # aspetta solo che il container sia started, non healthy
+      - chromadb
     networks:
       - normatrix-net
     restart: "no"
+
+  # ── Backend FastAPI + Frontend ────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: normatrix-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - CHROMA_MODE=http
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+      - CHROMA_WAIT_RETRIES=15
+      - CHROMA_WAIT_INTERVAL=5
+      - CHROMA_COLLECTION_POLICIES=bank_policies
+      - PIPELINE_PATH=/app/pipeline_src
+      - DOCUMENTS_DIR=/app/documents
+      - COMPLIANCE_THRESHOLD=0.75
+      - RETRIEVER_TOP_K=5
+    volumes:
+      # I PDF caricati via UI vengono scritti qui
+      # La pipeline li legge dalla stessa cartella
+      - ./documents:/app/documents
+      # Monta il codice della pipeline nel backend per riusarlo
+      - ./preprocessing:/app/pipeline_src
+    depends_on:
+      - chromadb
+    networks:
+      - normatrix-net
 
 volumes:
   chroma-data:

@@ -29,7 +29,7 @@ from llama_index.core.node_parser import (
 )
 from llama_index.core.schema import BaseNode, NodeRelationship
 
-from config import (
+from preprocessing.config import (
     CHUNK_STRATEGY,
     CHUNK_SIZES,
     CHUNK_OVERLAP,
@@ -212,7 +212,7 @@ class DocumentChunker:
 # ─────────────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    from pdf_parser import PDFParser
+    from preprocessing.pdf_parser import PDFParser
     import sys
 
     if len(sys.argv) < 2:

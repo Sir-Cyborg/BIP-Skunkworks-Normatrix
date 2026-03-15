@@ -21,7 +21,7 @@ from chromadb import Collection
 from llama_index.core.schema import BaseNode
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
-from config import (
+from preprocessing.config import (
     CHROMA_DIR,
     EMBEDDING_MODEL,
     CHROMA_COLLECTION_POLICIES,
@@ -301,8 +301,8 @@ class VectorStore:
 
 if __name__ == "__main__":
     import sys
-    from pdf_parser import PDFParser
-    from chunker import DocumentChunker
+    from preprocessing.pdf_parser import PDFParser
+    from preprocessing.chunker import DocumentChunker
 
     if len(sys.argv) < 2:
         print("Usage: python vector_store.py <path_to_pdf>")

@@ -22,7 +22,7 @@ from loguru import logger
 import pdfplumber
 from llama_index.core import Document
 
-from config import MIN_TEXT_LENGTH
+from preprocessing.config import MIN_TEXT_LENGTH
 
 
 # ─────────────────────────────────────────────────────────────────────────────

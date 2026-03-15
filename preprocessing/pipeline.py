@@ -14,10 +14,10 @@ import time
 from pathlib import Path
 from loguru import logger
 
-from pdf_parser import PDFParser
-from chunker import DocumentChunker
-from vector_store import VectorStore
-from config import (
+from preprocessing.pdf_parser import PDFParser
+from preprocessing.chunker import DocumentChunker
+from preprocessing.vector_store import VectorStore
+from preprocessing.config import (
     DATA_DIR,
     CHROMA_COLLECTION_POLICIES,
     CHROMA_COLLECTION_REGULATIONS,

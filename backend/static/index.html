@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Normatrix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --bg2: #111318;
+    --bg3: #181c23;
+    --border: #1e2530;
+    --border2: #2a3040;
+    --text: #c8d0dc;
+    --text2: #7a8899;
+    --text3: #4a5568;
+    --accent: #00d4ff;
+    --accent2: #0099bb;
+    --green: #00e676;
+    --green2: #00a152;
+    --red: #ff4444;
+    --red2: #b71c1c;
+    --yellow: #ffc107;
+    --yellow2: #8a6800;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── Layout ── */
+  .shell {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    grid-template-rows: 52px 1fr;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── Header ── */
+  header {
+    grid-column: 1 / -1;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+  }
+
+  .logo {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .logo span {
+    color: var(--text3);
+    font-weight: 400;
+  }
+
+  .header-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 2px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ── Sidebar ── */
+  nav {
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 20px 0;
+    overflow-y: auto;
+  }
+
+  .nav-section {
+    padding: 0 16px;
+    margin-bottom: 24px;
+  }
+
+  .nav-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text3);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0 8px;
+    margin-bottom: 6px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+  }
+
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+
+  .nav-item.active {
+    background: rgba(0, 212, 255, 0.08);
+    color: var(--accent);
+    border-color: rgba(0, 212, 255, 0.2);
+  }
+
+  .nav-icon { font-size: 15px; width: 18px; text-align: center; }
+
+  /* ── Main content ── */
+  main {
+    overflow-y: auto;
+    padding: 28px 32px;
+    background: var(--bg);
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── Page header ── */
+  .page-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .page-heading {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 24px;
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Upload zone ── */
+  .upload-zone {
+    border: 1px dashed var(--border2);
+    border-radius: 4px;
+    padding: 28px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--bg3);
+  }
+
+  .upload-zone:hover {
+    border-color: var(--accent2);
+    background: rgba(0, 212, 255, 0.04);
+  }
+
+  .upload-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(0, 212, 255, 0.08);
+  }
+
+  .upload-icon { font-size: 28px; margin-bottom: 8px; }
+
+  .upload-text {
+    color: var(--text2);
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+
+  .upload-hint {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--mono);
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+  }
+  .btn-primary:hover { background: #33ddff; }
+  .btn-primary:disabled { background: var(--border2); color: var(--text3); cursor: not-allowed; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text2);
+    border: 1px solid var(--border2);
+  }
+  .btn-ghost:hover { border-color: var(--text2); color: var(--text); }
+
+  /* ── Table ── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .data-table th {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg3);
+  }
+
+  .data-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+  }
+
+  .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .data-table tr:last-child td { border-bottom: none; }
+
+  /* ── Badges ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .badge-compliant { background: rgba(0,230,118,0.12); color: var(--green); border: 1px solid rgba(0,230,118,0.25); }
+  .badge-non-compliant { background: rgba(255,68,68,0.12); color: var(--red); border: 1px solid rgba(255,68,68,0.25); }
+  .badge-partial { background: rgba(255,193,7,0.12); color: var(--yellow); border: 1px solid rgba(255,193,7,0.25); }
+  .badge-pending { background: var(--bg3); color: var(--text3); border: 1px solid var(--border); }
+
+  /* ── Dashboard stats ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 18px;
+  }
+
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+
+  .stat-value {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .stat-value.total { color: var(--text); }
+  .stat-value.compliant { color: var(--green); }
+  .stat-value.non-compliant { color: var(--red); }
+  .stat-value.partial { color: var(--yellow); }
+
+  /* ── Progress bar ── */
+  .progress-bar {
+    height: 4px;
+    background: var(--bg3);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 20px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green2), var(--green));
+    border-radius: 2px;
+    transition: width 0.8s ease;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    margin-top: 6px;
+  }
+
+  /* ── Evidence panel ── */
+  .evidence-row { cursor: pointer; }
+
+  .evidence-detail {
+    display: none;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    padding: 16px;
+    margin: 4px 0 8px 0;
+  }
+
+  .evidence-detail.open { display: block; }
+
+  .evidence-item {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+
+  .evidence-meta {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  .evidence-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    background: var(--bg3);
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+
+  .evidence-tag.score-high { color: var(--green); }
+  .evidence-tag.score-mid { color: var(--yellow); }
+  .evidence-tag.score-low { color: var(--red); }
+
+  .evidence-text {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.7;
+    font-family: var(--mono);
+  }
+
+  .evaluation-box {
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    padding: 14px;
+    margin-top: 12px;
+  }
+
+  .evaluation-box.compliant { border-left: 3px solid var(--green); }
+  .evaluation-box.non-compliant { border-left: 3px solid var(--red); }
+  .evaluation-box.partial { border-left: 3px solid var(--yellow); }
+
+  .evaluation-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .evaluation-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .placeholder-notice {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text3);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 2px;
+    margin-left: auto;
+  }
+
+  .evaluation-text {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+
+  /* ── Expandable row ── */
+  .expand-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 2px;
+    transition: background 0.15s;
+  }
+  .expand-btn:hover { background: rgba(0,212,255,0.08); }
+
+  /* ── Alerts ── */
+  .alert {
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+  }
+
+  .alert-info { background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2); color: var(--accent); }
+  .alert-success { background: rgba(0,230,118,0.08); border: 1px solid rgba(0,230,118,0.2); color: var(--green); }
+  .alert-error { background: rgba(255,68,68,0.08); border: 1px solid rgba(255,68,68,0.2); color: var(--red); }
+
+  /* ── Loading ── */
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-row td {
+    text-align: center;
+    padding: 32px;
+    color: var(--text3);
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  /* ── Corpus chunk count ── */
+  .chunk-count {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(0,212,255,0.08);
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* ── Animations ── */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-in { animation: fadeIn 0.25s ease forwards; }
+
+  /* ── File input hidden ── */
+  input[type="file"] { display: none; }
+
+  .question-text {
+    max-width: 520px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .question-id {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- ── Header ── -->
+  <header>
+    <div class="logo">NORMATRIX<span>.ai</span></div>
+    <div class="header-tag">v0.1-alpha</div>
+    <div class="header-tag" id="header-status">● connecting...</div>
+  </header>
+
+  <!-- ── Sidebar ── -->
+  <nav>
+    <div class="nav-section">
+      <div class="nav-label">Workspace</div>
+      <div class="nav-item active" onclick="showPage('corpus')">
+        <span class="nav-icon">◫</span> Corpus
+      </div>
+      <div class="nav-item" onclick="showPage('analysis')">
+        <span class="nav-icon">⊞</span> Analisi
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Main ── -->
+  <main>
+
+    <!-- ════════════════════════════════════════
+         PAGE: CORPUS MANAGEMENT
+    ════════════════════════════════════════ -->
+    <div class="page active" id="page-corpus">
+      <div class="page-title">workspace / corpus</div>
+      <div class="page-heading">Gestione Documenti</div>
+
+      <div id="corpus-alert"></div>
+
+      <!-- Upload PDF -->
+      <div class="card">
+        <div class="card-title">Carica documento</div>
+        <div class="upload-zone" id="pdf-drop-zone" onclick="document.getElementById('pdf-input').click()">
+          <input type="file" id="pdf-input" accept=".pdf" multiple onchange="handlePdfUpload(this.files)">
+          <div class="upload-icon">⬆</div>
+          <div class="upload-text">Trascina i PDF qui oppure clicca per selezionare</div>
+          <div class="upload-hint">Solo file PDF — verranno indicizzati in ChromaDB</div>
+        </div>
+      </div>
+
+      <!-- Documenti nel DB -->
+      <div class="card">
+        <div class="card-title">Indice documentale</div>
+        <table class="data-table" id="corpus-table">
+          <thead>
+            <tr>
+              <th>Collection</th>
+              <th>Chunk indicizzati</th>
+              <th>Stato</th>
+            </tr>
+          </thead>
+          <tbody id="corpus-tbody">
+            <tr class="loading-row">
+              <td colspan="3"><span class="spinner"></span> Caricamento...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         PAGE: ANALISI NORMATIVA
+    ════════════════════════════════════════ -->
+    <div class="page" id="page-analysis">
+      <div class="page-title">workspace / analisi</div>
+      <div class="page-heading">Analisi di Conformità</div>
+
+      <div id="analysis-alert"></div>
+
+      <!-- Upload domande -->
+      <div class="card">
+        <div class="card-title">Carica domande requisito</div>
+        <div class="upload-zone" id="csv-drop-zone" onclick="document.getElementById('csv-input').click()">
+          <input type="file" id="csv-input" accept=".csv,.xlsx,.xls" onchange="handleQuestionUpload(this.files)">
+          <div class="upload-icon">⬆</div>
+          <div class="upload-text">CSV o Excel con colonne <code style="color:var(--accent)">ID</code> e <code style="color:var(--accent)">Question</code></div>
+          <div class="upload-hint">Ogni riga = un requisito normativo da verificare</div>
+        </div>
+
+        <div id="questions-preview" style="margin-top:16px; display:none">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px">
+            <span style="font-family:var(--mono); font-size:11px; color:var(--text2)">
+              <span id="questions-count">0</span> domande caricate
+            </span>
+            <button class="btn btn-primary" id="run-btn" onclick="runAnalysis()">
+              ▶ Avvia Analisi
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard -->
+      <div id="dashboard-section" style="display:none">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Totale requisiti</div>
+            <div class="stat-value total" id="stat-total">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Compliant</div>
+            <div class="stat-value compliant" id="stat-compliant">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Non compliant</div>
+            <div class="stat-value non-compliant" id="stat-non-compliant">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Parziale</div>
+            <div class="stat-value partial" id="stat-partial">—</div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:16px 20px">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px">
+            <span style="font-family:var(--mono); font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.1em">Compliance rate</span>
+            <span style="font-family:var(--mono); font-size:16px; color:var(--green)" id="stat-rate">—</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+          </div>
+          <div class="progress-label">
+            <span>0%</span><span>50%</span><span>100%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Risultati -->
+      <div id="results-section" style="display:none">
+        <div class="card" style="padding:0; overflow:hidden">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width:60px">ID</th>
+                <th>Requisito</th>
+                <th style="width:130px">Valutazione</th>
+                <th style="width:80px">Conf.</th>
+                <th style="width:90px">Dettaglio</th>
+              </tr>
+            </thead>
+            <tbody id="results-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /page-analysis -->
+
+  </main>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+let loadedQuestions = [];
+let analysisResults = [];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'corpus') loadCorpus();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HEALTH CHECK
+// ─────────────────────────────────────────────────────────────────────────────
+async function checkHealth() {
+  try {
+    const r = await fetch('/api/health');
+    if (r.ok) {
+      document.getElementById('header-status').textContent = '● online';
+      document.getElementById('header-status').style.color = 'var(--green)';
+    }
+  } catch {
+    document.getElementById('header-status').textContent = '● offline';
+    document.getElementById('header-status').style.color = 'var(--red)';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CORPUS
+// ─────────────────────────────────────────────────────────────────────────────
+async function loadCorpus() {
+  const tbody = document.getElementById('corpus-tbody');
+  tbody.innerHTML = '<tr class="loading-row"><td colspan="3"><span class="spinner"></span> Caricamento...</td></tr>';
+  try {
+    const r = await fetch('/api/corpus');
+    const data = await r.json();
+    if (!data.collections || data.collections.length === 0) {
+      tbody.innerHTML = '<tr class="loading-row"><td colspan="3">Nessuna collection trovata. Carica dei documenti PDF.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.collections.map(c => `
+      <tr class="fade-in">
+        <td><span style="font-family:var(--mono); color:var(--accent)">${c.name}</span></td>
+        <td><span class="chunk-count">${c.count} chunk</span></td>
+        <td><span class="badge badge-compliant">● indicizzato</span></td>
+      </tr>
+    `).join('');
+  } catch(e) {
+    tbody.innerHTML = '<tr class="loading-row"><td colspan="3" style="color:var(--red)">Errore connessione al backend.</td></tr>';
+  }
+}
+
+async function handlePdfUpload(files) {
+  const alertEl = document.getElementById('corpus-alert');
+  for (const file of files) {
+    alertEl.innerHTML = `<div class="alert alert-info"><span class="spinner"></span> Caricamento di "${file.name}"...</div>`;
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const r = await fetch('/api/corpus/upload', { method: 'POST', body: fd });
+      const data = await r.json();
+      if (r.ok) {
+        alertEl.innerHTML = `<div class="alert alert-success fade-in">✓ ${data.message}</div>`;
+        setTimeout(loadCorpus, 2000);
+      } else {
+        alertEl.innerHTML = `<div class="alert alert-error fade-in">✗ ${data.detail}</div>`;
+      }
+    } catch(e) {
+      alertEl.innerHTML = `<div class="alert alert-error fade-in">✗ Errore di rete.</div>`;
+    }
+  }
+}
+
+// Drag & drop PDF
+const pdfZone = document.getElementById('pdf-drop-zone');
+pdfZone.addEventListener('dragover', e => { e.preventDefault(); pdfZone.classList.add('dragover'); });
+pdfZone.addEventListener('dragleave', () => pdfZone.classList.remove('dragover'));
+pdfZone.addEventListener('drop', e => {
+  e.preventDefault();
+  pdfZone.classList.remove('dragover');
+  handlePdfUpload(e.dataTransfer.files);
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// QUESTIONS UPLOAD
+// ─────────────────────────────────────────────────────────────────────────────
+async function handleQuestionUpload(files) {
+  const alertEl = document.getElementById('analysis-alert');
+  const file = files[0];
+  if (!file) return;
+
+  alertEl.innerHTML = `<div class="alert alert-info"><span class="spinner"></span> Parsing "${file.name}"...</div>`;
+
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    const r = await fetch('/api/analysis/upload', { method: 'POST', body: fd });
+    const data = await r.json();
+
+    if (r.ok) {
+      loadedQuestions = data.questions;
+      document.getElementById('questions-count').textContent = data.total;
+      document.getElementById('questions-preview').style.display = 'block';
+      alertEl.innerHTML = `<div class="alert alert-success fade-in">✓ ${data.total} domande caricate da "${file.name}"</div>`;
+      // Reset risultati precedenti
+      document.getElementById('dashboard-section').style.display = 'none';
+      document.getElementById('results-section').style.display = 'none';
+    } else {
+      alertEl.innerHTML = `<div class="alert alert-error fade-in">✗ ${data.detail}</div>`;
+    }
+  } catch(e) {
+    alertEl.innerHTML = `<div class="alert alert-error fade-in">✗ Errore di rete.</div>`;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RUN ANALYSIS
+// ─────────────────────────────────────────────────────────────────────────────
+async function runAnalysis() {
+  if (!loadedQuestions.length) return;
+
+  const alertEl = document.getElementById('analysis-alert');
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Analisi in corso...';
+
+  alertEl.innerHTML = `<div class="alert alert-info"><span class="spinner"></span> Retrieval e valutazione in corso su ${loadedQuestions.length} domande...</div>`;
+
+  try {
+    const r = await fetch('/api/analysis/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ questions: loadedQuestions, top_k: 5 }),
+    });
+    const data = await r.json();
+
+    if (r.ok) {
+      analysisResults = data.results;
+      renderDashboard(data.dashboard);
+      renderResults(data.results);
+      alertEl.innerHTML = `<div class="alert alert-success fade-in">✓ Analisi completata su ${data.dashboard.total} requisiti</div>`;
+    } else {
+      alertEl.innerHTML = `<div class="alert alert-error fade-in">✗ ${data.detail}</div>`;
+    }
+  } catch(e) {
+    alertEl.innerHTML = `<div class="alert alert-error fade-in">✗ Errore di rete: ${e.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '▶ Avvia Analisi';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RENDER DASHBOARD
+// ─────────────────────────────────────────────────────────────────────────────
+function renderDashboard(d) {
+  document.getElementById('stat-total').textContent = d.total;
+  document.getElementById('stat-compliant').textContent = d.compliant;
+  document.getElementById('stat-non-compliant').textContent = d.non_compliant;
+  document.getElementById('stat-partial').textContent = d.partial;
+  document.getElementById('stat-rate').textContent = d.compliance_rate + '%';
+  document.getElementById('progress-fill').style.width = d.compliance_rate + '%';
+  document.getElementById('dashboard-section').style.display = 'block';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RENDER RESULTS TABLE
+// ─────────────────────────────────────────────────────────────────────────────
+function renderResults(results) {
+  const tbody = document.getElementById('results-tbody');
+  tbody.innerHTML = results.map((r, i) => {
+    const badgeClass = {
+      'COMPLIANT': 'badge-compliant',
+      'NON_COMPLIANT': 'badge-non-compliant',
+      'PARTIAL': 'badge-partial',
+    }[r.evaluation.status] || 'badge-pending';
+
+    const statusLabel = {
+      'COMPLIANT': '✓ Compliant',
+      'NON_COMPLIANT': '✗ Non Compliant',
+      'PARTIAL': '◑ Parziale',
+    }[r.evaluation.status] || r.evaluation.status;
+
+    return `
+      <tr>
+        <td><span class="question-id">#${r.id}</span></td>
+        <td><div class="question-text">${escapeHtml(r.question)}</div></td>
+        <td><span class="badge ${badgeClass}">${statusLabel}</span></td>
+        <td>
+          <span style="font-family:var(--mono); font-size:11px; color:${confidenceColor(r.evaluation.confidence)}">
+            ${(r.evaluation.confidence * 100).toFixed(0)}%
+          </span>
+        </td>
+        <td>
+          <button class="expand-btn" onclick="toggleDetail(${i})">
+            <span id="arrow-${i}">▶</span> Dettaglio
+          </button>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="5" style="padding:0; border:none">
+          <div class="evidence-detail" id="detail-${i}">
+            ${renderEvidences(r.evidences)}
+            ${renderEvaluation(r.evaluation)}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  document.getElementById('results-section').style.display = 'block';
+}
+
+function toggleDetail(i) {
+  const detail = document.getElementById('detail-' + i);
+  const arrow = document.getElementById('arrow-' + i);
+  const isOpen = detail.classList.toggle('open');
+  arrow.textContent = isOpen ? '▼' : '▶';
+}
+
+function renderEvidences(evidences) {
+  if (!evidences || !evidences.length) {
+    return '<div style="color:var(--text3); font-size:12px; font-family:var(--mono)">Nessuna evidenza recuperata.</div>';
+  }
+  return `
+    <div style="font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:10px">
+      Evidenze recuperate (${evidences.length})
+    </div>
+    ${evidences.map((e, i) => {
+      const scoreClass = e.score >= 0.75 ? 'score-high' : e.score >= 0.55 ? 'score-mid' : 'score-low';
+      return `
+        <div class="evidence-item">
+          <div class="evidence-meta">
+            <span class="evidence-tag ${scoreClass}">score: ${e.score.toFixed(3)}</span>
+            <span class="evidence-tag">${escapeHtml(e.source)}</span>
+            ${e.section_path && e.section_path !== 'N/A' ? `<span class="evidence-tag">${escapeHtml(e.section_path)}</span>` : ''}
+            ${e.page_number && e.page_number !== 'N/A' ? `<span class="evidence-tag">pag. ${e.page_number}</span>` : ''}
+            ${e.has_table ? '<span class="evidence-tag">⊞ tabella</span>' : ''}
+          </div>
+          <div class="evidence-text">${escapeHtml(e.text.substring(0, 600))}${e.text.length > 600 ? '…' : ''}</div>
+        </div>
+      `;
+    }).join('')}
+  `;
+}
+
+function renderEvaluation(ev) {
+  const cls = {
+    'COMPLIANT': 'compliant',
+    'NON_COMPLIANT': 'non-compliant',
+    'PARTIAL': 'partial',
+  }[ev.status] || '';
+
+  return `
+    <div class="evaluation-box ${cls}">
+      <div class="evaluation-header">
+        <span class="evaluation-label">Valutazione LLM</span>
+        ${ev.is_placeholder ? '<span class="placeholder-notice">⚠ placeholder</span>' : ''}
+      </div>
+      <div class="evaluation-text">${escapeHtml(ev.explanation)}</div>
+    </div>
+  `;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UTILS
+// ─────────────────────────────────────────────────────────────────────────────
+function confidenceColor(c) {
+  if (c >= 0.75) return 'var(--green)';
+  if (c >= 0.55) return 'var(--yellow)';
+  return 'var(--red)';
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────────────────────
+checkHealth();
+loadCorpus();
+</script>
+</body>
+</html>
