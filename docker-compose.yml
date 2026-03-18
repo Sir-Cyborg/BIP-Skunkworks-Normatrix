@@ -36,6 +36,10 @@ services:
     container_name: normatrix-backend
     ports:
       - "8080:8080"
+    # extra_hosts permette al container di raggiungere l'host Linux
+    # tramite l'hostname "host.docker.internal" — funziona su Linux e Windows
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - CHROMA_MODE=http
       - CHROMA_HOST=chromadb
@@ -46,10 +50,9 @@ services:
       - PIPELINE_PATH=/app/pipeline_src
       - DOCUMENTS_DIR=/app/documents
       - RETRIEVER_TOP_K=5
-      # Ollama gira sul PC host Windows, raggiungibile dal container tramite
-      # host.docker.internal — hostname speciale che Docker risolve automaticamente
+      # Ollama gira sulla VM host — raggiungibile tramite host.docker.internal
       - OLLAMA_BASE_URL=http://host.docker.internal:11434
-      - OLLAMA_MODEL=phi3.5
+      - OLLAMA_MODEL=llama3.2
       - LLM_TIMEOUT=120
       - COMPLIANCE_THRESHOLD=0.75
     volumes:
